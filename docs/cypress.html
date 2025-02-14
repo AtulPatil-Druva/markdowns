@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cypress Testing Documentation</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <h2>Documentation</h2>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="cypress.html">Cypress</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h1>Writing Cypress Component Tests for Orion UI</h1>
+            
+            <h2>Getting Started</h2>
+            <p>Before diving into Orion-specific testing, it's recommended to familiarize yourself with Cypress basics. 
+            Visit the <a href="https://docs.cypress.io/app/get-started/why-cypress" target="_blank">official Cypress documentation</a> 
+            to learn about why Cypress is a great choice for modern web testing.</p>
+
+            <h2>Network Validation Commands</h2>
+            
+            <h3>1. interceptMSW</h3>
+            <p>Used to mock API responses using MSW (Mock Service Worker). See the <a href="https://mswjs.io/docs/" target="_blank">MSW documentation</a> for more details.</p>
+            
+            <h4>Usage:</h4>
+            <pre><code class="typescript">
+cy.interceptMSW(
+    http.post<never, EntitiesSearchRequest, EntitiesSearchResponse | ErrorResponse>(
+        ENTITIES_SEARCH_PATH,
+        () => {
+            return HttpResponse.json({
+                entities: [],
+                totalCount: 0,
+                nextPageToken: "",
+            });
+        },
+    ),
+);
+            </code></pre>
+
+            <h3>2. listenToMockedResponses</h3>
+            <p>Starts recording all MSW mocked responses for later verification.</p>
+            
+            <h4>Usage:</h4>
+            <pre><code class="typescript">
+// Start recording responses before the action
+cy.listenToMockedResponses();
+
+// Perform actions that trigger API calls
+
+// Verify the recorded responses
+cy.getMockedResponses().then(responses => {
+    // Verify specific responses
+});
+            </code></pre>
+
+            <h3>3. resetMockedResponses</h3>
+            <p>Clears all recorded mocked responses. Typically used in <code>afterEach</code> to clean up between tests.</p>
+            
+            <h4>Usage:</h4>
+            <pre><code class="typescript">
+afterEach(() => {
+    cy.resetMockedResponses();
+});
+            </code></pre>
+
+            <h3>4. getMockedResponses</h3>
+            <p>Retrieves all recorded mocked responses for verification.</p>
+            
+            <h4>Usage:</h4>
+            <pre><code class="typescript">
+cy.getMockedResponses().then(responses => {
+    const specificResponse = responses.find(r => 
+        r.url.includes('/api/endpoint') && 
+        r.method === 'POST'
+    );
+    expect(specificResponse).to.exist;
+});
+            </code></pre>
+
+            <h3>5. verifyApiCallAndBody</h3>
+            <p>Verifies that a specific API call was made with the expected request body.</p>
+            
+            <h4>Usage:</h4>
+            <pre><code class="typescript">
+cy.verifyApiCallAndBody(
+    '/api/endpoint',
+    'POST',
+    {
+        key: 'value'
+    }
+);
+            </code></pre>
+
+            <h3>6. waitForMockedApiCall</h3>
+            <p>Waits for a specific API call to be made. Useful when you need to ensure an API call completed before proceeding.</p>
+            
+            <h4>Usage:</h4>
+            <pre><code class="typescript">
+cy.waitForMockedApiCall('/api/endpoint', 'POST', 30000);
+            </code></pre>
+
+            <h2>Best Practices</h2>
+            <ol>
+                <li>Always use <code>listenToMockedResponses()</code> before actions that trigger API calls you want to verify.</li>
+                <li>Clean up with <code>resetMockedResponses()</code> in <code>afterEach</code> to ensure a clean state between tests.</li>
+                <li>When verifying API calls:
+                    <ul>
+                        <li>Use <code>waitForMockedApiCall</code> when you need to ensure an API call completed</li>
+                        <li>Use <code>verifyApiCallAndBody</code> when you need to verify both the API call and its request body</li>
+                        <li>Use <code>getMockedResponses</code> when you need more detailed verification of multiple API calls. This will most likely be used very rarely but can give you more detailed information about the API calls that were made.</li>
+                    </ul>
+                </li>
+                <li>When mocking responses:
+                    <ul>
+                        <li>Use <code>interceptMSW</code> to set up mocked responses before mounting components</li>
+                        <li>Consider error cases and edge cases in your mocked responses</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3>Complete Example</h3>
+            <pre><code class="typescript">
+describe('API Test', () => {
+    beforeEach(() => {
+        cy.interceptMSW(/* ... */);
+        cy.listenToMockedResponses();
+    });
+
+    afterEach(() => {
+        cy.resetMockedResponses();
+    });
+
+    it('should make API call', () => {
+        // Perform action
+        cy.waitForMockedApiCall('/api/endpoint', 'POST');
+        cy.verifyApiCallAndBody('/api/endpoint', 'POST', expectedBody);
+    });
+});
+            </code></pre>
+        </main>
+    </div>
+</body>
+</html>
