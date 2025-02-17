@@ -149,25 +149,33 @@ describe('API Test', () => {
             <p>The DataCollection component provides a set of utility methods to interact with and verify table data in your tests.</p>
 
             <h3>Initializing DataCollection</h3>
+            <p>The DataCollection component is typically wrapped in a div with a specific class or data-testid. You'll need to pass this wrapper's selector to initialize the DataCollectionTable.</p>
+            
+            <h4>Example from code:</h4>
             <pre><code class="typescript">
-const table = new DataCollectionTable('[data-testid="your-table-selector"]');
+// The selector comes from the div that wraps the DataCollection component
+// For example, given this structure:
+<div className="qa-table-policies-list">
+    <DataCollection
+        dataGridConfig={...}
+        actionButtonConfig={...}
+        // ... other props
+    />
+</div>
+
+// Initialize the table with the wrapper's selector:
+const table = new DataCollectionTable('.qa-table-policies-list');
             </code></pre>
 
             <h3>Basic Table Operations</h3>
             <h4>1. Row Operations</h4>
+            <p>Note: The <code>row-selector</code> parameter typically uses the <code>dataCollectionRow</code> constant imported from the Table Page Object Model (POM).</p>
+            
             <pre><code class="typescript">
+import { dataCollectionRow } from './table.pom';
+
 // Check if a specific row exists (will scroll through table)
-table.checkIfRowExistsInTable('[row-selector]', 'Entity Name', maxEntityCount);
-
-// Click on a specific row
-table.clickOnRow(2); // Clicks the third row (zero-based index)
-
-// Verify row count
-table.verifyRowCount(5); // Verifies table has exactly 5 rows
-table.verifyRowCount(10, true); // Scrolls to bottom before verifying
-
-// Verify row count text (e.g., "5 items selected")
-table.verifyRowCountText('5 items selected');
+table.checkIfRowExistsInTable(dataCollectionRow, 'Entity Name', maxEntityCount);
             </code></pre>
 
             <h4>2. Column Operations</h4>
