@@ -144,6 +144,147 @@ describe('API Test', () => {
     });
 });
             </code></pre>
+
+            <h2>DataCollection Component Testing</h2>
+            <p>The DataCollection component provides a set of utility methods to interact with and verify table data in your tests.</p>
+
+            <h3>Initializing DataCollection</h3>
+            <pre><code class="typescript">
+const table = new DataCollectionTable('[data-testid="your-table-selector"]');
+            </code></pre>
+
+            <h3>Basic Table Operations</h3>
+            <h4>1. Row Operations</h4>
+            <pre><code class="typescript">
+// Check if a specific row exists (will scroll through table)
+table.checkIfRowExistsInTable('[row-selector]', 'Entity Name', maxEntityCount);
+
+// Click on a specific row
+table.clickOnRow(2); // Clicks the third row (zero-based index)
+
+// Verify row count
+table.verifyRowCount(5); // Verifies table has exactly 5 rows
+table.verifyRowCount(10, true); // Scrolls to bottom before verifying
+
+// Verify row count text (e.g., "5 items selected")
+table.verifyRowCountText('5 items selected');
+            </code></pre>
+
+            <h4>2. Column Operations</h4>
+            <pre><code class="typescript">
+// Get a specific column
+table.getColumn('Column Name');
+
+// Verify column exists
+table.verifyColExists('Column Name');
+table.verifyColExists('Column Name', false); // Verify column doesn't exist
+
+// Verify column count
+table.verifyColCount(6);
+
+// Verify specific column header name
+table.verifyHeaderColumnsName(0, 'ID'); // First column should be 'ID'
+            </code></pre>
+
+            <h4>3. Cell Operations</h4>
+            <pre><code class="typescript">
+// Get specific cell
+table.getCell(1, 2); // Gets cell at row 1, column 2
+
+// Verify cell content
+table.verifyCellContent(1, 2, 'Expected Content'); // Using column index
+table.verifyCellContent(1, 'Column Name', 'Expected Content'); // Using column name
+
+// Verify cell contains specific child element
+table.verifyCellChild(1, 2, '[data-testid="child-element"]');
+table.verifyCellChild(1, 'Column Name', '[data-testid="child-element"]');
+            </code></pre>
+
+            <h4>4. Selection Operations</h4>
+            <pre><code class="typescript">
+// Checkbox operations
+table.selectCheckboxByIndex(1);
+table.toggleSelectAll();
+table.verifyCheckboxIsSelectable(1, true);
+table.verifyCheckboxesExist();
+
+// Get checkbox or radio button for specific row
+table.getDatacollectionRowCbx('Row Identifier');
+table.getDatacollectionRowRadioBtn('Row Identifier');
+            </code></pre>
+
+            <h4>5. Sorting and Scrolling</h4>
+            <pre><code class="typescript">
+// Sort table
+table.sortBy('Column Name');
+table.sortBy(2); // Sort by third column
+
+// Scroll operations
+table.scrollToBottom();
+            </code></pre>
+
+            <h4>6. Dropdown Operations</h4>
+            <pre><code class="typescript">
+// Click dropdown menu action
+table.clickOnDropdownMenuAction('Action Name');
+
+// Verify dropdown states
+table.verifyDropdownMenuActionIsEnabled('Action Name');
+table.verifyDropdownMenuActionIsDisabled('Action Name');
+table.verifyDropdownMenuActionExist('Action Name');
+table.verifyDropdownMenuActionDoesNotExist('Action Name');
+table.verifyDropdownButtonDoesNotExist();
+            </code></pre>
+
+            <h3>Complete Example</h3>
+            <pre><code class="typescript">
+describe('DataCollection Tests', () => {
+    let table;
+
+    beforeEach(() => {
+        table = new DataCollectionTable('[data-testid="users-table"]');
+    });
+
+    it('should display and interact with user data', () => {
+        // Verify table structure
+        table.verifyColCount(4);
+        table.verifyHeaderColumnsName(0, 'ID');
+        table.verifyHeaderColumnsName(1, 'Name');
+
+        // Verify content
+        table.verifyCellContent(0, 'Name', 'John Doe');
+        
+        // Interact with table
+        table.sortBy('Name');
+        table.selectCheckboxByIndex(0);
+        
+        // Verify selection
+        table.verifyRowCountText('1 item selected');
+        
+        // Use dropdown
+        table.clickOnDropdownMenuAction('Edit');
+    });
+});
+            </code></pre>
+
+            <h2>Best Practices</h2>
+            <ol>
+                <li>Always use <code>listenToMockedResponses()</code> before actions that trigger API calls you want to verify.</li>
+                <li>Clean up with <code>resetMockedResponses()</code> in <code>afterEach</code> to ensure a clean state between tests.</li>
+                <li>When verifying API calls:
+                    <ul>
+                        <li>Use <code>waitForMockedApiCall</code> when you need to ensure an API call completed</li>
+                        <li>Use <code>verifyApiCallAndBody</code> when you need to verify both the API call and its request body</li>
+                        <li>Use <code>getMockedResponses</code> when you need more detailed verification of multiple API calls. This will most likely be used very rarely but can give you more detailed information about the API calls that were made.</li>
+                    </ul>
+                </li>
+                <li>When mocking responses:
+                    <ul>
+                        <li>Use <code>interceptMSW</code> to set up mocked responses before mounting components</li>
+                        <li>Consider error cases and edge cases in your mocked responses</li>
+                    </ul>
+                </li>
+            </ol>
         </main>
     </div>
 </body>
