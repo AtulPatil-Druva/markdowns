@@ -155,13 +155,13 @@ describe('API Test', () => {
             <pre><code class="typescript">
 // The selector comes from the div that wraps the DataCollection component
 // For example, given this structure:
-<div className="qa-table-policies-list">
-    <DataCollection
+&lt;div className="qa-table-policies-list"&gt;
+    &lt;DataCollection
         dataGridConfig={...}
         actionButtonConfig={...}
         // ... other props
-    />
-</div>
+    /&gt;
+&lt;/div&gt;
 
 // Initialize the table with the wrapper's selector:
 const table = new DataCollectionTable('.qa-table-policies-list');
